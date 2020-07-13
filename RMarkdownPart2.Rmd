@@ -1,0 +1,79 @@
+---
+title: "Statistical Inference Course Project - Part II"
+author: "Pingping"
+date: "7/12/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width = 6, fig.height = 2.5)
+library(datasets)
+library(ggplot2)
+```
+
+## Introduction
+
+In this project, we first load the ToothGrowth data from the R datasets package, and did some basic data analyses. We also used confidential intervals and hypothesis tests to compare the tooth growth by supp and dose.
+
+### ToothGrowth data 
+```{r load the data}
+toothdata <- ToothGrowth # get the ToothGrowth data into a data.frame
+str(toothdata) # a brief summary of the toothdata
+sum(!complete.cases(toothdata))
+```
+
+**Exploratory data Analyses**
+
+The following figure showed the tooth growth by different supplyments, namely VC and OJ.
+```{r tooth growth by supp}
+g2 <- ggplot(toothdata, aes(x=supp, y=len,fill = supp)) +  geom_boxplot() 
+g2 <- g2 + labs(title = "Tooth Growth by Supp", x = "Supp", y = "Tooth Growth")
+g2
+```
+
+The following figure showed the tooth growth by different dosages.
+```{r tooth growth by dose}
+toothdata$dose <- as.factor(toothdata$dose)
+g1 <- ggplot(toothdata, aes(x=dose, y=len,fill=dose)) +  geom_boxplot() + facet_grid(.~ supp) 
+g1 <- g1 + labs(title = "Tooth Growth by Dose", x = "Dose", y = "Tooth Growth")
+g1
+```
+
+**Summary** 
+The ToothGrowth data has 60 observations, decribing the growth of tooth using 2 kings of supplyments, VC and OJ, with three different dosages. Overall, OJ is more effient in assisting tooth growth. For both VC and OJ, the tooth showed a larger growth with a larger supplyment dosage.
+
+### Hypothesis test
+
+#### Compare tooth growth by supp
+**H_01: VC and OJ have similar influence on tooth growth**
+```{r VC and OJ comparison}
+VC_data <- subset(toothdata, supp == "VC") # get the VC data
+OJ_data <- subset(toothdata, supp == "OJ") # get the OJ data
+t.test(VC_data$len, OJ_data$len, paired = FALSE)
+```
+**Summary:** The p_value of the t.test is **0.06063**, which is bigger than 0.05. Therefore, we can not reject the null hypothesis, which means VC and OJ have similar influence on tooth growth. Moreover, the 95% confidence interval is frim -7.57 to 0.17, including 0, which also means the two supplyments have similar effects on tooth growth.
+
+#### Compare supp dose
+**H_02: Different doses have similar influence on tooth growth**
+
+(1) First, test the influence of different doses of VC.
+```{r VC dose}
+VC0.5 <- subset(VC_data, dose == 0.5) # get the 0.5 dose data
+VC1 <- subset(VC_data, dose == 1) # get the 1 dose data
+VC2 <- subset(VC_data, dose == 2) # get the 2 dose data
+t.test(VC0.5$len, VC1$len, paired = FALSE)$p.value
+t.test(VC1$len, VC2$len, paired = FALSE)$p.value
+```
+As we can see, both of the p-value are far less than 0.05, suggesting that we are able to reject the Null hypotheses.Therefore, there are differences in the influence of different doses of VC in tooth growth.
+
+(2) Then, test the influence of different doses of OJ
+```{r OJ dose}
+OJ0.5 <- subset(OJ_data, dose == 0.5) # get the 0.5 dose data
+OJ1 <- subset(OJ_data, dose == 1) # get the 1 dose data
+OJ2 <- subset(OJ_data, dose == 2) # get the 2 dose data
+t.test(OJ0.5$len, OJ1$len, paired = FALSE)$p.value
+t.test(OJ1$len, OJ2$len, paired = FALSE)$p.value
+```
+As we can see, both of the p-value are far less than 0.05, suggesting that we are able to reject the Null hypotheses.Therefore, there are differences in the influence of different doses of OJ in tooth growth.
+
+**Summary:** VC and OJ have similar influence on tooth growth. For both VC and OJ, the larger the dose is, the more efficient in assisting tooth growth.
